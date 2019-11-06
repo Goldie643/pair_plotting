@@ -35,7 +35,7 @@ pairs_df = pd.DataFrame({
     "date": dates })
 
 # Need to normalise to livetime!
-freq="D"
+freq="M"
 grouped_pairs = pairs_df.groupby(
     [pd.Grouper(key="date", freq=freq)])["pairs"].sum()
 grouped_run_dur = pairs_df.groupby(
