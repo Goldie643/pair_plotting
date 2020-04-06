@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+import numpy as np
 from datetime import datetime as dt
 from calendar import monthrange
 import math
@@ -33,7 +34,8 @@ def main():
         lambda month : dt.strptime(month, "%Y-%m"))
     lf_skreact.set_index("month",inplace=True)
     # ax2 = ax1.twinx()
-    lf_skreact.loc[date_start:date_end,"n_int"].plot(ax=ax1,label="Expected SK Interactions")
+    # lf_skreact.loc[date_start:date_end,"n_int"].plot(
+    #     ax=ax1,label="Expected SK Interactions")
     # ax1.legend(loc="upper left")
     # ax2.legend(loc="upper center")
     ax1.set_ylabel(r"N Pairs [month$^{-1}$]")
@@ -75,6 +77,7 @@ def plot_monthly(file_name, ax):
             run_pairs = row.pairs
             last_run = int(row.run)
 
+    # Assume all runs are entirely contained in the start date. TODO: fix this.
     dates = [dt.fromtimestamp(date_unix) for date_unix in dates_unix]
 
     pairs_df = pd.DataFrame({ 
@@ -84,24 +87,39 @@ def plot_monthly(file_name, ax):
         "date_unix": dates_unix,
         "date": dates })
 
+    # Get rid of dodgy runs
     pairs_df = pairs_df[pairs_df["run_dur"] > 80000]
 
-    # Need to normalise to livetime!
     freq="M"
+    # Sum of pairs in a month
     grouped_pairs = pairs_df.groupby(
         [pd.Grouper(key="date", freq=freq)])["pairs"].sum()
+    # Sum of run time in a month
     grouped_run_dur = pairs_df.groupby(
         [pd.Grouper(key="date", freq=freq)])["run_dur"].sum()
+    # Get pairs/s from this
+    grouped_pairs_err = grouped_pairs.apply(np.sqrt)
     normed_pairs = grouped_pairs.div(grouped_run_dur)
+    normed_pairs_err = grouped_pairs_err.div(grouped_run_dur)
     normed_pairs.interpolate(inplace=True)
 
     normed_month_pairs_ls = []
+    normed_month_errors_ls = []
 
     for date, pairs in normed_pairs.iteritems():
-        normed_month_pairs_ls.append(month_scale(date,pairs))
+        normed_month_pairs_ls.append(month_scale(date, pairs))
 
-    normed_month_pairs = pd.Series(normed_month_pairs_ls, index = normed_pairs.index)
-    normed_month_pairs.loc[date_start:date_end].plot(ax=ax,style="-",label=file_name)
+    for date, err in normed_pairs_err.iteritems():
+        normed_month_errors_ls.append(month_scale(date, err))
+
+    normed_month_pairs = pd.Series(
+        normed_month_pairs_ls, index = normed_pairs.index)
+    normed_month_errors = pd.Series(
+        normed_month_errors_ls, index = normed_pairs.index)
+
+    normed_month_pairs.loc[date_start:date_end].plot(
+        yerr=normed_month_errors.loc[date_start:date_end],
+        ax=ax,style="-",label=file_name,capsize=5)
     return
 
 def plot_periods(file_name, ax):
