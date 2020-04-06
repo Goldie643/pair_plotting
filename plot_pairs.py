@@ -5,18 +5,30 @@ from datetime import datetime as dt
 from calendar import monthrange
 import math
 import sys
+import argparse
 
 date_start = "2016-10-01"
 date_end = "2018-04-01"
 
+lf_file = "n_int_20200211-094023.csv"
+
+parser = argparse.ArgumentParser(description="Plot IBD pair rates.")
+parser.add_argument("file_names", metavar="csvs", type=str, nargs="+",
+    help=".csv viles of format run,tot,pairs of IBD pairs per run")
+parser.add_argument("--monthly", dest="plot_pairs", action="store_const",
+    const=plot_monthly, default=plot_periods,
+    help="Plot pair rate monthly (default: plot in distinct periods)")
+
+args = parser.parse_args()
+
 def main():
     fig, ax1 = plt.subplots()
 
-    for file_name in sys.argv[1:]:
-        plot_pairs(file_name,ax1)
+    for file_name in args.file_names:
+        args.plot_pairs(file_name,ax1)
 
     # lf_skreact = pd.read_csv("lf_20191107-005242.csv")
-    lf_skreact = pd.read_csv("n_int_20200211-094023.csv")
+    lf_skreact = pd.read_csv(lf_file)
     lf_skreact["month"] = lf_skreact["month"].apply(
         lambda month : dt.strptime(month, "%Y-%m"))
     lf_skreact.set_index("month",inplace=True)
@@ -33,7 +45,7 @@ def main():
     plt.show()
     return
 
-def plot_pairs(file_name, ax):
+def plot_monthly(file_name, ax):
     # raw_pairs = pd.read_csv("pairs_sol_cut_extra_tight_fv.csv")
     raw_pairs = pd.read_csv(file_name)
     run_info = pd.read_csv("run_info.csv",index_col=0)
