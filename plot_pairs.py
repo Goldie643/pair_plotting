@@ -67,7 +67,7 @@ def plot_monthly(file_name, ax):
         if(row.run == last_run):
             run_pairs += row.pairs
         else:
-            run_pairs = row.pairs
+            # run_pairs = row.pairs
             runs.append(last_run)
             run_dur.append(run_info.loc[last_run]["time_diff"])
             pairs.append(run_pairs)
