@@ -87,8 +87,8 @@ def plot_monthly(file_name, ax):
         "date_unix": dates_unix,
         "date": dates })
 
-    # Get rid of dodgy runs
-    pairs_df = pairs_df[pairs_df["run_dur"] > 80000]
+    # Get rid of short runs
+    # pairs_df = pairs_df[pairs_df["run_dur"] > 80000]
 
     freq="M"
     # Sum of pairs in a month
