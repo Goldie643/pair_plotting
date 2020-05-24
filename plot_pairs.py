@@ -11,6 +11,12 @@ import argparse
 date_start = "2016-10-01"
 date_end = "2018-04-01"
 
+pre_th_start = date_start
+pre_th_end = "2017-06-01"
+
+post_th_start = "2017-07-01"
+post_th_end = date_end
+
 lf_file = "n_int_20200211-094023.csv"
 
 
@@ -160,15 +166,21 @@ def plot_periods(file_name, ax):
     # pairs_df = pairs_df[pairs_df["pairs"] > 400000]
 
     # Need to normalise to livetime!
-    freq="M"
-    grouped_pairs = pairs_df.groupby(
-        [pd.Grouper(key="date", freq=freq)])["pairs"].sum()
-    grouped_run_dur = pairs_df.groupby(
-        [pd.Grouper(key="date", freq=freq)])["run_dur"].sum()
+    # freq="M"
+    # grouped_pairs = pairs_df.groupby(
+    #     [pd.Grouper(key="date", freq=freq)])["pairs"].sum()
+    # grouped_run_dur = pairs_df.groupby(
+    #     [pd.Grouper(key="date", freq=freq)])["run_dur"].sum()
     # grouped_pairs = grouped_pairs[grouped_pairs.map(
     #     lambda x: math.sqrt(x)<0.01*x)]
     # print(grouped_pairs.head())
     # print(grouped_run_dur.head())
+
+    pairs_pre = pairs_df[pairs_df["date"] > pre_th_start]
+    pairs_pre = pairs_df[pairs_df["date"] < pre_th_end]
+    pairs_post = pairs_df[pairs_df["date"] > post_th_start]
+    pairs_post = pairs_df[pairs_df["date"] < post_th_end]
+
     normed_pairs = grouped_pairs.div(grouped_run_dur)
     normed_pairs.interpolate(inplace=True)
     # normed_pairs = normed_pairs[normed_pairs.map(
